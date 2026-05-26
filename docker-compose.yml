@@ -1,0 +1,31 @@
+# Stack for Docker Engine (incl. Colima on Mac). Requires: colima start, then make up
+name: telegram-olx-bot
+
+services:
+  telegram-bot:
+    build: .
+    container_name: telegram_realestate_bot
+    working_dir: /app
+    command: python3 main.py
+    restart: unless-stopped
+    volumes:
+      - ./app:/app
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7
+    container_name: telegram_redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
